@@ -3,41 +3,39 @@ package co.edu.eafit.dis.gui;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.Graphics;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.Stack;
 
+import java.util.ArrayList;
+
+import javax.swing.JOptionPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class StartGameGUI extends JFrame {
-
-    int width = 400, height = 600;
-    int pointX, pointY; // Coordinates.
-    
-    int rows = 8, cols = 8;
-
-    JPanel gamePanel = new JPanel();
-    
-    JLabel dotsArray[][];
-    
-    public Point actualPoint = null;
-    public Point newPoint = null;
     
     ArrayList<Integer> points = new ArrayList<>();
     
-    Graphics graphics = this.getGraphics();
+    JPanel gamePanel = new JPanel();
+
+    int width = 400, height = 600;
+    int pointX = 0, pointY = 0;
+    int rows = 5, cols = 5;
+    
+    Point actualPoint = null;
+    Point finalPoint = null;
+    
+    JLabel dotsArray[][];
     
     public StartGameGUI() {
         drawLinesGUI(rows, cols);
     }
 
     private void drawLinesGUI(int rows, int cols) {
+        this.setTitle("Dots and Boxes");
         this.setSize(width, height);
         this.setResizable(false);
         this.setLayout(null);
@@ -70,25 +68,26 @@ public class StartGameGUI extends JFrame {
                             setPointX(((int) x.getX()) / dis);
                             setPointY(((int) y.getY()) / dis);
                         
-                            newPoint = new Point(getPointX(), getPointY());
+                            finalPoint = new Point(getPointX(), getPointY());
                             
                             boolean isLineCorrect = validateLine
-                                (actualPoint, newPoint);
+                                (actualPoint, finalPoint);
                             
                             if (isLineCorrect) {
                                 
                                 points.add((int)actualPoint.getX());
                                 points.add((int)actualPoint.getY());
-                                points.add((int)newPoint.getX());
-                                points.add((int)newPoint.getY());
+                                points.add((int)finalPoint.getX());
+                                points.add((int)finalPoint.getY());
                                 
                                 repaint();
                             } else {
-                                System.out.println("not correct!");
+                                JOptionPane.showMessageDialog(
+                                        null, "Invalid movement!");
                             }
                             
                             actualPoint = null; // Reload the initial point;
-                            newPoint = null;
+                            finalPoint = null;  // Reload the final point;
                             
                         } else {
                             setPointX(((int) x.getX()) / dis);
@@ -96,9 +95,6 @@ public class StartGameGUI extends JFrame {
                             
                             actualPoint = new Point(getPointX(), getPointY());
                         }
-                        
-                        System.out.println("point x " + getPointX());
-                        System.out.println("point y " + getPointY());
                     }
                 });
             }
@@ -123,7 +119,7 @@ public class StartGameGUI extends JFrame {
                 int x = (gamePanel.getWidth() - 8) / (cols) * j;
                 int y = (gamePanel.getWidth() - 8) / (rows) * i;
                 
-                dots[i][j].setLocation(x, y);
+                dots[i][j].setLocation(x,y);
                 
                 gamePanel.add(dots[i][j]);
             }
@@ -132,30 +128,26 @@ public class StartGameGUI extends JFrame {
         return dots;
     }
     
-    private void drawLine(Graphics g) {
+    @Override
+    public void paint(Graphics g) {
+        
+        super.paint(g); // Overlap paint.
         
         int dis = (gamePanel.getWidth() - 8) / (cols);
         
         if(!points.isEmpty()) {
             
+            int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+            
             for (int i = 0; i < points.size(); i = i+4) {
-                g.drawLine(
-                    dis * points.get(i) + 33, dis * points.get(i+1) + 57,
-                    dis * points.get(i+2) + 33, dis * points.get(i+3) + 57
-                );
+                x0 = dis * points.get(i) + 33;
+                y0 = dis * points.get(i+1) + 57;
+                x1 = dis * points.get(i+2) + 33;
+                y1 = dis * points.get(i+3) + 57;
+                
+                g.drawLine(x0, y0, x1, y1);
             }   
         }
-    }
-    
-    @Override
-    public void paint(Graphics g) {
-        
-        graphics = g;
-        super.paint(graphics); // Overlap paint.
-        
-        Graphics2D g2d = (Graphics2D) graphics;
-        
-        drawLine(graphics);
     }
     
     private boolean validateLine(Point iP, Point fP) {
