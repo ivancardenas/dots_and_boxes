@@ -29,8 +29,6 @@ public class StartGameGUI extends JFrame {
     public Point actualPoint = null;
     public Point newPoint = null;
     
-    Stack<Integer> list = new Stack<>();
-    
     ArrayList<Integer> points = new ArrayList<>();
     
     Graphics graphics = this.getGraphics();
@@ -65,10 +63,12 @@ public class StartGameGUI extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         
+                        int dis = (gamePanel.getWidth() - 8) / (cols);
+                        
                         if (actualPoint != null) {
                             
-                            setPointX((int) x.getX()); 
-                            setPointY((int) y.getY());
+                            setPointX(((int) x.getX()) / dis);
+                            setPointY(((int) y.getY()) / dis);
                         
                             newPoint = new Point(getPointX(), getPointY());
                             
@@ -76,10 +76,6 @@ public class StartGameGUI extends JFrame {
                                 (actualPoint, newPoint);
                             
                             if (isLineCorrect) {
-                                list.push((int)newPoint.getY());
-                                list.push((int)newPoint.getX());
-                                list.push((int)actualPoint.getY());
-                                list.push((int)actualPoint.getX());
                                 
                                 points.add((int)actualPoint.getX());
                                 points.add((int)actualPoint.getY());
@@ -95,14 +91,14 @@ public class StartGameGUI extends JFrame {
                             newPoint = null;
                             
                         } else {
-                            setPointX((int) x.getX()); 
-                            setPointY((int) y.getY());
+                            setPointX(((int) x.getX()) / dis);
+                            setPointY(((int) y.getY()) / dis);
                             
                             actualPoint = new Point(getPointX(), getPointY());
                         }
                         
-                        //System.out.println("point x " + getPointX());
-                        //System.out.println("point y " + getPointY());
+                        System.out.println("point x " + getPointX());
+                        System.out.println("point y " + getPointY());
                     }
                 });
             }
@@ -138,23 +134,16 @@ public class StartGameGUI extends JFrame {
     
     private void drawLine(Graphics g) {
         
-        if(!list.empty()) {
-            int x0 = (int)list.pop();
-            int y0 = (int)list.pop();
-            int x1 = (int)list.pop();
-            int y1 = (int)list.pop();
-            
-            System.out.println("x0: "+x0);
-            System.out.println("y0: "+y0);
-            System.out.println("x1: "+x1);
-            System.out.println("y1: "+y1);
+        int dis = (gamePanel.getWidth() - 8) / (cols);
+        
+        if(!points.isEmpty()) {
             
             for (int i = 0; i < points.size(); i = i+4) {
-                g.drawLine(points.get(i),points.get(i+1),
-                        points.get(i+2), points.get(i+3));
-            }
-            
-            g.drawLine(x0, y0, x1, y1);
+                g.drawLine(
+                    dis * points.get(i) + 33, dis * points.get(i+1) + 57,
+                    dis * points.get(i+2) + 33, dis * points.get(i+3) + 57
+                );
+            }   
         }
     }
     
@@ -172,17 +161,16 @@ public class StartGameGUI extends JFrame {
     private boolean validateLine(Point iP, Point fP) {
         // iP: initial point, fP: final point.
         
-        int dist = (gamePanel.getWidth() - 8) / (cols);
         boolean lineStatus = false;
         
         if (iP.getX() == fP.getX()) {
             if (iP.getY() > fP.getY()) {
-                if (iP.getY() - fP.getY() == dist) {
+                if (iP.getY() - fP.getY() == 1) {
                     lineStatus = true;
                 }
             } else {
                 if (iP.getY() < fP.getY()) {
-                    if (fP.getY() - iP.getY() == dist) {
+                    if (fP.getY() - iP.getY() == 1) {
                         lineStatus = true;
                     }
                 }
@@ -190,12 +178,12 @@ public class StartGameGUI extends JFrame {
         } else {
             if (iP.getY() == fP.getY()) {
                 if (iP.getX() > fP.getX()) {
-                    if (iP.getX() - fP.getX() == dist) {
+                    if (iP.getX() - fP.getX() == 1) {
                         lineStatus = true;
                     }
                 } else {
                     if (iP.getX() < fP.getX()) {
-                        if (fP.getX() - iP.getX() == dist) {
+                        if (fP.getX() - iP.getX() == 1) {
                             lineStatus = true;
                         }
                     }
