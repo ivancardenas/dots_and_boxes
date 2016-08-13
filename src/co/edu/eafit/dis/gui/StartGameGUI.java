@@ -8,6 +8,8 @@ import java.awt.Point;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Stack;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -27,12 +29,12 @@ public class StartGameGUI extends JFrame {
     public Point actualPoint = null;
     public Point newPoint = null;
     
-    boolean state = false;
+    Stack<Integer> list = new Stack<>();
     
-    Graphics graphics;
+    ArrayList<Integer> points = new ArrayList<>();
     
-    int flag = 0;
-
+    Graphics graphics = this.getGraphics();
+    
     public StartGameGUI() {
         drawLinesGUI(rows, cols);
     }
@@ -69,37 +71,34 @@ public class StartGameGUI extends JFrame {
                             setPointY((int) y.getY());
                         
                             newPoint = new Point(getPointX(), getPointY());
-                            state = true;
-                            
-                            /*System.out.println(
-                                      "  x1: " + actualPoint.getX() 
-                                    + ", y1: " + actualPoint.getY() 
-                                    + ", x2: " + newPoint.getX() 
-                                    + ", y2: " + newPoint.getY());*/
                             
                             boolean isLineCorrect = validateLine
                                 (actualPoint, newPoint);
                             
                             if (isLineCorrect) {
-                                //repaint();
+                                list.push((int)newPoint.getY());
+                                list.push((int)newPoint.getX());
+                                list.push((int)actualPoint.getY());
+                                list.push((int)actualPoint.getX());
                                 
-                                flag = 1;
-                                drawLine(graphics);
-                                //repaint();
+                                points.add((int)actualPoint.getX());
+                                points.add((int)actualPoint.getY());
+                                points.add((int)newPoint.getX());
+                                points.add((int)newPoint.getY());
+                                
+                                repaint();
                             } else {
                                 System.out.println("not correct!");
                             }
                             
                             actualPoint = null; // Reload the initial point;
                             newPoint = null;
-                            state = false;
                             
                         } else {
                             setPointX((int) x.getX()); 
                             setPointY((int) y.getY());
                             
                             actualPoint = new Point(getPointX(), getPointY());
-                            state = false;
                         }
                         
                         //System.out.println("point x " + getPointX());
@@ -139,18 +138,21 @@ public class StartGameGUI extends JFrame {
     
     private void drawLine(Graphics g) {
         
-        if(state) {
-            int x0 = (int)actualPoint.getX();
-            int y0 = (int)actualPoint.getY();
-            int x1 = (int)newPoint.getX();
-            int y1 = (int)newPoint.getY();
+        if(!list.empty()) {
+            int x0 = (int)list.pop();
+            int y0 = (int)list.pop();
+            int x1 = (int)list.pop();
+            int y1 = (int)list.pop();
             
             System.out.println("x0: "+x0);
             System.out.println("y0: "+y0);
             System.out.println("x1: "+x1);
             System.out.println("y1: "+y1);
             
-            System.out.println("entro pero no dibuja!!!");
+            for (int i = 0; i < points.size(); i = i+4) {
+                g.drawLine(points.get(i),points.get(i+1),
+                        points.get(i+2), points.get(i+3));
+            }
             
             g.drawLine(x0, y0, x1, y1);
         }
@@ -163,7 +165,8 @@ public class StartGameGUI extends JFrame {
         super.paint(graphics); // Overlap paint.
         
         Graphics2D g2d = (Graphics2D) graphics;
-        drawLine(g2d);
+        
+        drawLine(graphics);
     }
     
     private boolean validateLine(Point iP, Point fP) {
