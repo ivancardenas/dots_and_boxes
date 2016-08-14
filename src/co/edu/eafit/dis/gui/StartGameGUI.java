@@ -24,6 +24,7 @@ public class StartGameGUI extends JFrame {
     int width = 400, height = 600;
     int pointX = 0, pointY = 0;
     int rows = 5, cols = 5;
+    int movements = 0;
     
     Point actualPoint = null;
     Point finalPoint = null;
@@ -79,6 +80,8 @@ public class StartGameGUI extends JFrame {
                                 points.add((int)actualPoint.getY());
                                 points.add((int)finalPoint.getX());
                                 points.add((int)finalPoint.getY());
+                                
+                                movements++;
                                 
                                 repaint();
                             } else {
@@ -148,6 +151,76 @@ public class StartGameGUI extends JFrame {
                 g.drawLine(x0, y0, x1, y1);
             }   
         }
+        
+        thereIsASquare();
+    }
+    
+    private boolean thereIsASquare() {
+        
+        int ax0 = 0, ay0 = 0, ax1 = 0, ay1 = 0;
+        int nx0 = 0, ny0 = 0, nx1 = 0, ny1 = 0;
+        
+        int verLineCont = 0, horLineCont = 0;
+        
+        if (movements >= 4) {
+            
+            ay1 = points.get(points.size() - 1);
+            ax1 = points.get(points.size() - 2);
+            ay0 = points.get(points.size() - 3);
+            ax0 = points.get(points.size() - 4);
+            
+            if (ay0 == ay1) {
+                
+                for (int i = points.size() - 5; i >= 0; i = i - 4) {
+                    
+                    nx0 = points.get(i-3);
+                    ny0 = points.get(i-2);
+                    nx1 = points.get(i-1);
+                    ny1 = points.get(i);
+                    
+                    if (ny1 == ny0 && ny1 == ay0 + 1) {
+                        if (nx1 == ax0) {
+                            if (nx0 == ax1) horLineCont++;
+                        } else if (nx0 == ax0) {
+                            if (nx1 == ax1) horLineCont++;
+                        }
+                    } else if (ny1 == ny0 && ny1 == ay0 - 1) {
+                        if (nx1 == ax0) {
+                            if (nx0 == ax1) horLineCont++;
+                        } else if (nx0 == ax0) {
+                            if (nx1 == ax1) horLineCont++;
+                        }
+                    }
+                }
+            }
+            
+            if (ax0 == ax1) {
+                
+                for (int i = points.size() - 5; i >= 0; i = i - 4) {
+
+                    nx0 = points.get(i-3);
+                    ny0 = points.get(i-2);
+                    nx1 = points.get(i-1);
+                    ny1 = points.get(i);
+
+                    if (nx1 == nx0 && nx1 == ax0 + 1) {
+                        if (ny1 == ay0) {
+                            if (ny0 == ay1) verLineCont++;
+                        } else if (ny0 == ay0) {
+                            if (ny1 == ay1) verLineCont++;
+                        }
+                    } else if (nx1 == nx0 && nx1 == ax0 - 1) {
+                        if (ny1 == ay0) {
+                            if (ny0 == ay1) verLineCont++;
+                        } else if (ny0 == ay0) {
+                            if (ny1 == ay1) verLineCont++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return false;
     }
     
     private boolean validateLine(Point iP, Point fP) {
