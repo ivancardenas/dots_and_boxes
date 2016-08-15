@@ -152,70 +152,75 @@ public class StartGameGUI extends JFrame {
             }   
         }
         
-        thereIsASquare();
+        if (movements > 0)
+            paintSquare();
     }
     
-    private boolean thereIsASquare() {
+    private boolean paintSquare() {
         
-        int ax0 = 0, ay0 = 0, ax1 = 0, ay1 = 0;
-        int nx0 = 0, ny0 = 0, nx1 = 0, ny1 = 0;
+        int y1 = points.get(points.size() - 1);
+        int x1 = points.get(points.size() - 2);
+        int y0 = points.get(points.size() - 3);
+        int x0 = points.get(points.size() - 4); 
         
-        int verLineCont = 0, horLineCont = 0;
-        
-        if (movements >= 4) {
-            
-            ay1 = points.get(points.size() - 1);
-            ax1 = points.get(points.size() - 2);
-            ay0 = points.get(points.size() - 3);
-            ax0 = points.get(points.size() - 4);
-            
-            if (ay0 == ay1) {
-                
-                for (int i = points.size() - 5; i >= 0; i = i - 4) {
-                    
-                    nx0 = points.get(i-3);
-                    ny0 = points.get(i-2);
-                    nx1 = points.get(i-1);
-                    ny1 = points.get(i);
-                    
-                    if (ny1 == ny0 && ny1 == ay0 + 1) {
-                        if (nx1 == ax0) {
-                            if (nx0 == ax1) horLineCont++;
-                        } else if (nx0 == ax0) {
-                            if (nx1 == ax1) horLineCont++;
-                        }
-                    } else if (ny1 == ny0 && ny1 == ay0 - 1) {
-                        if (nx1 == ax0) {
-                            if (nx0 == ax1) horLineCont++;
-                        } else if (nx0 == ax0) {
-                            if (nx1 == ax1) horLineCont++;
-                        }
-                    }
+        if (thereIsALine(x0, y0, x0, y0 + 1) || 
+                thereIsALine(x0, y0 + 1, x0, y0)) {
+            if (thereIsALine(x0, y0 + 1, x1, y1 + 1) || 
+                    thereIsALine(x1, y1 + 1, x0, y0 + 1)) {
+                if (thereIsALine(x1, y1 + 1, x1, y1) || 
+                        thereIsALine(x1, y1, x1, y1 + 1)) {
+                    System.out.println("Hay un cuadrado!");
                 }
             }
+        }
+        if (thereIsALine(x0, y0, x0, y0 - 1) || 
+                thereIsALine(x0, y0 - 1, x0, y0)) {
+            if (thereIsALine(x0, y0 - 1, x1, y1 - 1) || 
+                    thereIsALine(x1, y1 - 1, x0, y0 - 1)) {
+                if (thereIsALine(x1, y1 - 1, x1, y1) || 
+                        thereIsALine(x1, y1, x1, y1 - 1)) {
+                    System.out.println("Hay un cuadrado!");
+                }
+            }
+        }
+        if (thereIsALine(x0, y0, x0 + 1, y0) || 
+                thereIsALine(x0 + 1, y0, x0, y0)) {
+            if (thereIsALine(x0 + 1, y0, x1 + 1, y1) || 
+                    thereIsALine(x1 + 1, y1, x0 + 1, y0)) {
+                if (thereIsALine(x1 + 1, y1, x1, y1) || 
+                        thereIsALine(x1, y1, x1 + 1, y1)) {
+                    System.out.println("Hay un cuadrado!");
+                }
+            }
+        }
+        if (thereIsALine(x0, y0, x0 - 1, y0) || 
+                thereIsALine(x0 - 1, y0, x0, y0)) {
+            if (thereIsALine(x0 - 1, y0, x1 - 1, y1) || 
+                    thereIsALine(x1 - 1, y1, x0 - 1, y0)) {
+                if (thereIsALine(x1 - 1, y1, x1, y1) || 
+                        thereIsALine(x1, y1, x1 - 1, y1)) {
+                    System.out.println("Hay un cuadrado!");
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    private boolean thereIsALine(int x0, int y0, int x1, int y1) {
+        
+        int nx0 = 0, ny0 = 0, nx1 = 0, ny1 = 0;
+        
+        for (int i = points.size() - 5; i >= 0; i = i - 4) {
             
-            if (ax0 == ax1) {
-                
-                for (int i = points.size() - 5; i >= 0; i = i - 4) {
-
-                    nx0 = points.get(i-3);
-                    ny0 = points.get(i-2);
-                    nx1 = points.get(i-1);
-                    ny1 = points.get(i);
-
-                    if (nx1 == nx0 && nx1 == ax0 + 1) {
-                        if (ny1 == ay0) {
-                            if (ny0 == ay1) verLineCont++;
-                        } else if (ny0 == ay0) {
-                            if (ny1 == ay1) verLineCont++;
-                        }
-                    } else if (nx1 == nx0 && nx1 == ax0 - 1) {
-                        if (ny1 == ay0) {
-                            if (ny0 == ay1) verLineCont++;
-                        } else if (ny0 == ay0) {
-                            if (ny1 == ay1) verLineCont++;
-                        }
-                    }
+            nx0 = points.get(i-3);
+            ny0 = points.get(i-2);
+            nx1 = points.get(i-1);
+            ny1 = points.get(i);
+            
+            if (x0 == nx0 && y0 == ny0) {
+                if (x1 == nx1 && y1 == ny1) {
+                    return true;
                 }
             }
         }
