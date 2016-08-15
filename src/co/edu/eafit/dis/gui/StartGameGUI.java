@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Color;
+import java.awt.Font;
 
 import java.util.ArrayList;
 
@@ -29,7 +30,7 @@ public class StartGameGUI extends JFrame {
     Point actualPoint = null;
     Point finalPoint = null;
     
-    JLabel dotsArray[][];
+    JLabel dotsArray[][], namesArray[][];
     
     public StartGameGUI() {
         drawLinesGUI(rows, cols);
@@ -51,6 +52,8 @@ public class StartGameGUI extends JFrame {
         gamePanel.setLayout(null);
 
         dotsArray = paintDots(rows, cols);
+        
+        namesArray = paintNames(rows, cols);
         
         for (int i = 0; i <= rows; i++) {
             for (int j = 0; j <= cols; j++) {
@@ -131,6 +134,31 @@ public class StartGameGUI extends JFrame {
         return dots;
     }
     
+    private JLabel [][] paintNames(int rows, int cols) {
+        JLabel names[][] = new JLabel[rows][cols];
+        
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                names[i][j] = new JLabel("S");
+                names[i][j].setSize(15, 15);
+                
+                names[i][j].setFont(new Font("Monospace", 
+                        Font.PLAIN, 15));
+                
+                int x = (gamePanel.getWidth() - 8) / (cols) * j;
+                int y = (gamePanel.getWidth() - 8) / (rows) * i;
+                
+                names[i][j].setLocation(x + 33, y + 33);
+                
+                gamePanel.add(names[i][j]);
+                
+                names[i][j].setVisible(false);
+            }
+        }
+        
+        return names;
+    }
+    
     @Override
     public void paint(Graphics g) {
         
@@ -156,7 +184,7 @@ public class StartGameGUI extends JFrame {
             paintSquare();
     }
     
-    private boolean paintSquare() {
+    private void paintSquare() {
         
         int y1 = points.get(points.size() - 1);
         int x1 = points.get(points.size() - 2);
@@ -169,7 +197,9 @@ public class StartGameGUI extends JFrame {
                     thereIsALine(x1, y1 + 1, x0, y0 + 1)) {
                 if (thereIsALine(x1, y1 + 1, x1, y1) || 
                         thereIsALine(x1, y1, x1, y1 + 1)) {
-                    System.out.println("Hay un cuadrado!");
+                    
+                    if (x1 > x0) namesArray[y1][x1-1].setVisible(true);
+                    else if (x0 > x1) namesArray[y1][x1].setVisible(true);
                 }
             }
         }
@@ -179,7 +209,9 @@ public class StartGameGUI extends JFrame {
                     thereIsALine(x1, y1 - 1, x0, y0 - 1)) {
                 if (thereIsALine(x1, y1 - 1, x1, y1) || 
                         thereIsALine(x1, y1, x1, y1 - 1)) {
-                    System.out.println("Hay un cuadrado!");
+                    
+                    if (x1 > x0) namesArray[y1-1][x1-1].setVisible(true);
+                    else if (x0 > x1) namesArray[y1-1][x1].setVisible(true);
                 }
             }
         }
@@ -189,7 +221,9 @@ public class StartGameGUI extends JFrame {
                     thereIsALine(x1 + 1, y1, x0 + 1, y0)) {
                 if (thereIsALine(x1 + 1, y1, x1, y1) || 
                         thereIsALine(x1, y1, x1 + 1, y1)) {
-                    System.out.println("Hay un cuadrado!");
+                    
+                    if (y1 > y0) namesArray[y1-1][x1].setVisible(true);
+                    else if (y0 > y1) namesArray[y1][x1].setVisible(true);
                 }
             }
         }
@@ -199,12 +233,12 @@ public class StartGameGUI extends JFrame {
                     thereIsALine(x1 - 1, y1, x0 - 1, y0)) {
                 if (thereIsALine(x1 - 1, y1, x1, y1) || 
                         thereIsALine(x1, y1, x1 - 1, y1)) {
-                    System.out.println("Hay un cuadrado!");
+                    
+                    if (y1 > y0) namesArray[y1-1][x1-1].setVisible(true);
+                    else if (y0 > y1) namesArray[y1][x1-1].setVisible(true);
                 }
             }
         }
-        
-        return true;
     }
     
     private boolean thereIsALine(int x0, int y0, int x1, int y1) {
