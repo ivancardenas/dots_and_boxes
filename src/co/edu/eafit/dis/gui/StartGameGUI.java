@@ -8,8 +8,12 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Color;
 import java.awt.Font;
-
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.swing.JOptionPane;
 import javax.swing.JFrame;
@@ -18,25 +22,37 @@ import javax.swing.JPanel;
 
 public class StartGameGUI extends JFrame {
     
-    ArrayList<Integer> points = new ArrayList<>();
-    
     JPanel gamePanel = new JPanel();
 
     int width = 400, height = 600;
     int pointX = 0, pointY = 0;
     int rows = 5, cols = 5;
-    int movements = 0;
+    
+    String user;
     
     Point actualPoint = null;
     Point finalPoint = null;
     
     JLabel dotsArray[][], namesArray[][];
     
+    Connection connection;
+    
     public StartGameGUI() {
         drawLinesGUI(rows, cols);
+        
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            
+            connection = DriverManager.getConnection
+                ("jdbc:mysql://localhost/dots_and_boxes", "root", "rootroot");
+            
+        } catch (ClassNotFoundException | SQLException e) {
+            System.out.println("Connection error: " + e);
+        }
     }
 
     private void drawLinesGUI(int rows, int cols) {
+        
         this.setTitle("Dots and Boxes");
         this.setSize(width, height);
         this.setResizable(false);
@@ -79,12 +95,10 @@ public class StartGameGUI extends JFrame {
                             
                             if (isLineCorrect) {
                                 
-                                points.add((int)actualPoint.getX());
-                                points.add((int)actualPoint.getY());
-                                points.add((int)finalPoint.getX());
-                                points.add((int)finalPoint.getY());
-                                
-                                movements++;
+                                insertPointsDB((int)actualPoint.getX(),
+                                        (int)actualPoint.getY(),
+                                        (int)finalPoint.getX(),
+                                        (int)finalPoint.getY());
                                 
                                 repaint();
                             } else {
@@ -134,6 +148,27 @@ public class StartGameGUI extends JFrame {
         return dots;
     }
     
+    private void insertPointsDB(int x0, int y0, int x1, int y1) {
+        
+        String insertQuery = "INSERT INTO POINTS (x0, y0, x1, y1, idgame)"
+                + " VALUES (?, ?, ?, ?, ?)";
+        try {
+            PreparedStatement prepState = connection
+                    .prepareStatement(insertQuery);
+            prepState.setInt(1, x0);
+            prepState.setInt(2, y0);
+            prepState.setInt(3, x1);
+            prepState.setInt(4, y1);
+            prepState.setInt(5, 2); // idgame insertion.
+            
+            prepState.execute();
+            
+        } catch(SQLException e) {}
+        
+        
+        
+    }
+    
     private JLabel [][] paintNames(int rows, int cols) {
         JLabel names[][] = new JLabel[rows][cols];
         
@@ -166,98 +201,134 @@ public class StartGameGUI extends JFrame {
         
         int dis = (gamePanel.getWidth() - 8) / (cols);
         
-        if(!points.isEmpty()) {
-            
-            int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
-            
-            for (int i = 0; i < points.size(); i = i+4) {
-                x0 = dis * points.get(i) + 33;
-                y0 = dis * points.get(i+1) + 57;
-                x1 = dis * points.get(i+2) + 33;
-                y1 = dis * points.get(i+3) + 57;
-                
-                g.drawLine(x0, y0, x1, y1);
-            }   
-        }
-        
-        if (movements > 0)
-            paintSquare();
+        int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+
+        try {
+
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery (
+                    "SELECT * FROM POINTS WHERE idgame = 2");
+
+            while (result.next()) {
+
+                x0 = result.getInt(2);
+                y0 = result.getInt(3);
+                x1 = result.getInt(4);
+                y1 = result.getInt(5);
+
+                g.drawLine(x0 * dis + 33, y0 * dis + 57, 
+                        x1 * dis + 33, y1 * dis + 57);
+            }
+
+
+        } catch(SQLException e) {}
+
+        paintSquare();
     }
     
     private void paintSquare() {
         
-        int y1 = points.get(points.size() - 1);
-        int x1 = points.get(points.size() - 2);
-        int y0 = points.get(points.size() - 3);
-        int x0 = points.get(points.size() - 4); 
+        int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
         
-        if (thereIsALine(x0, y0, x0, y0 + 1) || 
-                thereIsALine(x0, y0 + 1, x0, y0)) {
-            if (thereIsALine(x0, y0 + 1, x1, y1 + 1) || 
-                    thereIsALine(x1, y1 + 1, x0, y0 + 1)) {
-                if (thereIsALine(x1, y1 + 1, x1, y1) || 
-                        thereIsALine(x1, y1, x1, y1 + 1)) {
-                    
-                    if (x1 > x0) namesArray[y1][x1-1].setVisible(true);
-                    else if (x0 > x1) namesArray[y1][x1].setVisible(true);
+        try {
+            
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM POINTS WHERE idgame = 2");
+            
+            while (result.next()) {
+                
+                x0 = result.getInt(2);
+                y0 = result.getInt(3);
+                x1 = result.getInt(4);
+                y1 = result.getInt(5);
+                
+                if (thereIsALine(x0, y0, x0, y0 + 1) || 
+                    thereIsALine(x0, y0 + 1, x0, y0)) {
+                    if (thereIsALine(x0, y0 + 1, x1, y1 + 1) || 
+                            thereIsALine(x1, y1 + 1, x0, y0 + 1)) {
+                        if (thereIsALine(x1, y1 + 1, x1, y1) || 
+                                thereIsALine(x1, y1, x1, y1 + 1)) {
+
+                            if (x1 > x0) namesArray[y1][x1 - 1]
+                                    .setVisible(true);
+                            else if (x0 > x1) namesArray[y1][x1]
+                                    .setVisible(true);
+                        }
+                    }
+                }
+                if (thereIsALine(x0, y0, x0, y0 - 1) || 
+                        thereIsALine(x0, y0 - 1, x0, y0)) {
+                    if (thereIsALine(x0, y0 - 1, x1, y1 - 1) || 
+                            thereIsALine(x1, y1 - 1, x0, y0 - 1)) {
+                        if (thereIsALine(x1, y1 - 1, x1, y1) || 
+                                thereIsALine(x1, y1, x1, y1 - 1)) {
+
+                            if (x1 > x0) namesArray[y1 - 1][x1 - 1]
+                                    .setVisible(true);
+                            else if (x0 > x1) namesArray[y1 - 1][x1]
+                                    .setVisible(true);
+                        }
+                    }
+                }
+                if (thereIsALine(x0, y0, x0 + 1, y0) || 
+                        thereIsALine(x0 + 1, y0, x0, y0)) {
+                    if (thereIsALine(x0 + 1, y0, x1 + 1, y1) || 
+                            thereIsALine(x1 + 1, y1, x0 + 1, y0)) {
+                        if (thereIsALine(x1 + 1, y1, x1, y1) || 
+                                thereIsALine(x1, y1, x1 + 1, y1)) {
+
+                            if (y1 > y0) namesArray[y1 - 1][x1]
+                                    .setVisible(true);
+                            else if (y0 > y1) namesArray[y1][x1]
+                                    .setVisible(true);
+                        }
+                    }
+                }
+                if (thereIsALine(x0, y0, x0 - 1, y0) || 
+                        thereIsALine(x0 - 1, y0, x0, y0)) {
+                    if (thereIsALine(x0 - 1, y0, x1 - 1, y1) || 
+                            thereIsALine(x1 - 1, y1, x0 - 1, y0)) {
+                        if (thereIsALine(x1 - 1, y1, x1, y1) || 
+                                thereIsALine(x1, y1, x1 - 1, y1)) {
+
+                            if (y1 > y0) namesArray[y1 - 1][x1 - 1]
+                                    .setVisible(true);
+                            else if (y0 > y1) namesArray[y1][x1 - 1]
+                                    .setVisible(true);
+                        }
+                    }
                 }
             }
-        }
-        if (thereIsALine(x0, y0, x0, y0 - 1) || 
-                thereIsALine(x0, y0 - 1, x0, y0)) {
-            if (thereIsALine(x0, y0 - 1, x1, y1 - 1) || 
-                    thereIsALine(x1, y1 - 1, x0, y0 - 1)) {
-                if (thereIsALine(x1, y1 - 1, x1, y1) || 
-                        thereIsALine(x1, y1, x1, y1 - 1)) {
-                    
-                    if (x1 > x0) namesArray[y1-1][x1-1].setVisible(true);
-                    else if (x0 > x1) namesArray[y1-1][x1].setVisible(true);
-                }
-            }
-        }
-        if (thereIsALine(x0, y0, x0 + 1, y0) || 
-                thereIsALine(x0 + 1, y0, x0, y0)) {
-            if (thereIsALine(x0 + 1, y0, x1 + 1, y1) || 
-                    thereIsALine(x1 + 1, y1, x0 + 1, y0)) {
-                if (thereIsALine(x1 + 1, y1, x1, y1) || 
-                        thereIsALine(x1, y1, x1 + 1, y1)) {
-                    
-                    if (y1 > y0) namesArray[y1-1][x1].setVisible(true);
-                    else if (y0 > y1) namesArray[y1][x1].setVisible(true);
-                }
-            }
-        }
-        if (thereIsALine(x0, y0, x0 - 1, y0) || 
-                thereIsALine(x0 - 1, y0, x0, y0)) {
-            if (thereIsALine(x0 - 1, y0, x1 - 1, y1) || 
-                    thereIsALine(x1 - 1, y1, x0 - 1, y0)) {
-                if (thereIsALine(x1 - 1, y1, x1, y1) || 
-                        thereIsALine(x1, y1, x1 - 1, y1)) {
-                    
-                    if (y1 > y0) namesArray[y1-1][x1-1].setVisible(true);
-                    else if (y0 > y1) namesArray[y1][x1-1].setVisible(true);
-                }
-            }
-        }
+            
+        } catch(SQLException e) {}
     }
     
     private boolean thereIsALine(int x0, int y0, int x1, int y1) {
         
         int nx0 = 0, ny0 = 0, nx1 = 0, ny1 = 0;
         
-        for (int i = points.size() - 5; i >= 0; i = i - 4) {
+        try {
             
-            nx0 = points.get(i-3);
-            ny0 = points.get(i-2);
-            nx1 = points.get(i-1);
-            ny1 = points.get(i);
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM POINTS WHERE idgame = 2");
             
-            if (x0 == nx0 && y0 == ny0) {
-                if (x1 == nx1 && y1 == ny1) {
-                    return true;
+            while (result.next()) {
+                
+                nx0 = result.getInt(2);
+                ny0 = result.getInt(3);
+                nx1 = result.getInt(4);
+                ny1 = result.getInt(5);
+                
+                if (x0 == nx0 && y0 == ny0) {
+                    if (x1 == nx1 && y1 == ny1) {
+                        return true;
+                    }
                 }
             }
-        }
+            
+        } catch(SQLException e) {}
         
         return false;
     }
@@ -296,6 +367,10 @@ public class StartGameGUI extends JFrame {
         }
         
         return lineStatus;
+    }
+    
+    public void setUser(String user) {
+        this.user = user;
     }
     
     private int getPointX() {

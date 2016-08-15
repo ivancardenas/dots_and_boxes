@@ -125,6 +125,7 @@ public class InitGameGUI extends JFrame {
                     this.dispose(); // Close this window.
                     StartGameGUI startGameGUI = new StartGameGUI();
                     startGameGUI.setVisible(true);
+                    startGameGUI.setUser(user);
                 } else {
                     JOptionPane.showMessageDialog(null, 
                             "Username or password incorrect!");
