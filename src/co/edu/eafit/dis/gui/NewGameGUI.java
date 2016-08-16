@@ -137,12 +137,14 @@ public class NewGameGUI extends JFrame {
                             new StartGameGUI(5, 5);
                         startGameGUI.setVisible(true);
                         startGameGUI.setGameID(gameStatus1[1]);
+                        startGameGUI.setUser(user);
                         this.dispose();
                     } else if (gameStatus2[0] == 1) {    
                         StartGameGUI startGameGUI = 
                             new StartGameGUI(5, 5);
                         startGameGUI.setVisible(true);
                         startGameGUI.setGameID(gameStatus2[1]);
+                        startGameGUI.setUser(user);
                         this.dispose();
                         
                     } else {
@@ -161,6 +163,7 @@ public class NewGameGUI extends JFrame {
 
                         StartGameGUI startGameGUI = 
                                 new StartGameGUI(5, 5);
+                        startGameGUI.setUser(user);
                         startGameGUI.setVisible(true);
 
                         String selectQuery = "SELECT * FROM games WHERE "

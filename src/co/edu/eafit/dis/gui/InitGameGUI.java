@@ -122,9 +122,10 @@ public class InitGameGUI extends JFrame {
                 
             } else {
                 if (loginComparison(user, pass)) {
-                    this.dispose();
                     
                     setOnlineStatus(user);
+                    
+                    this.dispose();
                     
                     NewGameGUI newGameGUI = new NewGameGUI();
                     newGameGUI.setUser(user);

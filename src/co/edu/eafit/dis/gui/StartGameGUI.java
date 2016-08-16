@@ -72,8 +72,8 @@ public class StartGameGUI extends JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                exitGame(gameID);
                 setOfflineStatus(user);
+                exitGame(gameID);
             }
         });
         
@@ -405,8 +405,12 @@ public class StartGameGUI extends JFrame {
     }
     
     private void setOfflineStatus(String user) {
+        
+        System.out.println("update");
         try {
             String insertQuery = "UPDATE users SET state = 0 WHERE user = ?";
+            
+            System.out.println("update: " + user);
             
             PreparedStatement prepState = connection
                     .prepareStatement(insertQuery);
