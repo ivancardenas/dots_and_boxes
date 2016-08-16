@@ -8,6 +8,10 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -19,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 public class StartGameGUI extends JFrame {
     
@@ -44,6 +49,13 @@ public class StartGameGUI extends JFrame {
         
         drawLinesGUI(rows, cols);
         
+        Timer timer = new Timer(5000, 
+                (ActionEvent e) -> {
+            repaint();
+        });
+        
+        timer.start();
+        
         this.cols = cols;
         
         try {
@@ -58,6 +70,13 @@ public class StartGameGUI extends JFrame {
     }
 
     private void drawLinesGUI(int rows, int cols) {
+        
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                exitGame(gameID);
+            }
+        });
         
         this.setTitle("Dots and Boxes");
         this.setSize(width, height);
@@ -170,9 +189,6 @@ public class StartGameGUI extends JFrame {
             prepState.execute();
             
         } catch(SQLException e) {}
-        
-        
-        
     }
     
     private JLabel [][] paintNames(int rows, int cols) {
@@ -373,6 +389,20 @@ public class StartGameGUI extends JFrame {
         }
         
         return lineStatus;
+    }
+    
+    private void exitGame(int gameID) {
+        
+        try {
+            String insertQuery = "UPDATE games SET state = 0 WHERE idgame = ?";
+            
+            PreparedStatement prepState = connection
+                    .prepareStatement(insertQuery);
+            prepState.setInt(1, gameID);
+            
+            prepState.executeUpdate();
+            
+        } catch(SQLException e) {}
     }
     
     public void setUser(String user) {
