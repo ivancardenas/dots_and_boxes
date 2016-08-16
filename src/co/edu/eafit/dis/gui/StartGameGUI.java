@@ -26,7 +26,8 @@ public class StartGameGUI extends JFrame {
 
     int width = 400, height = 600;
     int pointX = 0, pointY = 0;
-    int rows = 5, cols = 5;
+    
+    int cols = 0;
     
     String user;
     
@@ -37,8 +38,13 @@ public class StartGameGUI extends JFrame {
     
     Connection connection;
     
-    public StartGameGUI() {
+    int gameID;
+    
+    public StartGameGUI(int rows, int cols) {
+        
         drawLinesGUI(rows, cols);
+        
+        this.cols = cols;
         
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -159,7 +165,7 @@ public class StartGameGUI extends JFrame {
             prepState.setInt(2, y0);
             prepState.setInt(3, x1);
             prepState.setInt(4, y1);
-            prepState.setInt(5, 2); // idgame insertion.
+            prepState.setInt(5, gameID); // idgame insertion.
             
             prepState.execute();
             
@@ -207,7 +213,7 @@ public class StartGameGUI extends JFrame {
 
             Statement statement = connection.createStatement();
             ResultSet result = statement.executeQuery (
-                    "SELECT * FROM POINTS WHERE idgame = 2");
+                    "SELECT * FROM POINTS WHERE idgame = '" + gameID + "' ");
 
             while (result.next()) {
 
@@ -234,7 +240,7 @@ public class StartGameGUI extends JFrame {
             
             Statement statement = connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM POINTS WHERE idgame = 2");
+                    "SELECT * FROM POINTS WHERE idgame =  '" + gameID + "' ");
             
             while (result.next()) {
                 
@@ -312,7 +318,7 @@ public class StartGameGUI extends JFrame {
             
             Statement statement = connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM POINTS WHERE idgame = 2");
+                    "SELECT * FROM POINTS WHERE idgame = '" + gameID + "' ");
             
             while (result.next()) {
                 
@@ -371,6 +377,10 @@ public class StartGameGUI extends JFrame {
     
     public void setUser(String user) {
         this.user = user;
+    }
+    
+    public void setGameID(int gameID) {
+        this.gameID = gameID;
     }
     
     private int getPointX() {
