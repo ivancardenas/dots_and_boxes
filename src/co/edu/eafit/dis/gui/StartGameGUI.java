@@ -64,9 +64,7 @@ public class StartGameGUI extends JFrame {
             connection = DriverManager.getConnection
                 ("jdbc:mysql://localhost/dots_and_boxes", "root", "rootroot");
             
-        } catch (ClassNotFoundException | SQLException e) {
-            System.out.println("Connection error: " + e);
-        }
+        } catch (ClassNotFoundException | SQLException e) {}
     }
 
     private void drawLinesGUI(int rows, int cols) {
@@ -75,6 +73,7 @@ public class StartGameGUI extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 exitGame(gameID);
+                setOfflineStatus(user);
             }
         });
         
@@ -84,7 +83,7 @@ public class StartGameGUI extends JFrame {
         this.setLayout(null);
 
         this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(2);
+        this.setDefaultCloseOperation(3);
         this.getContentPane().setBackground(Color.WHITE);
 
         gamePanel.setBounds(30, 30, this.getWidth() - 60,
@@ -399,6 +398,19 @@ public class StartGameGUI extends JFrame {
             PreparedStatement prepState = connection
                     .prepareStatement(insertQuery);
             prepState.setInt(1, gameID);
+            
+            prepState.executeUpdate();
+            
+        } catch(SQLException e) {}
+    }
+    
+    private void setOfflineStatus(String user) {
+        try {
+            String insertQuery = "UPDATE users SET state = 0 WHERE user = ?";
+            
+            PreparedStatement prepState = connection
+                    .prepareStatement(insertQuery);
+            prepState.setString(1, user);
             
             prepState.executeUpdate();
             

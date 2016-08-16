@@ -6,6 +6,8 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -48,6 +50,14 @@ public class NewGameGUI extends JFrame {
     }
     
     private void createNewGame() {
+        
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                setOfflineStatus(user);
+            }
+        });
+        
         this.setTitle("Start New Game");
         this.setSize(width, height);
         this.setResizable(false);
@@ -238,5 +248,18 @@ public class NewGameGUI extends JFrame {
     
     public void setUser(String user) {
         this.user = user;
+    }
+    
+    private void setOfflineStatus(String user) {
+        try {
+            String insertQuery = "UPDATE users SET state = 0 WHERE user = ?";
+            
+            PreparedStatement prepState = connection
+                    .prepareStatement(insertQuery);
+            prepState.setString(1, user);
+            
+            prepState.executeUpdate();
+            
+        } catch(SQLException e) {}
     }
 }

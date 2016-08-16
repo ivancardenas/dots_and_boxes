@@ -12,6 +12,7 @@ import java.awt.Font;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -121,11 +122,9 @@ public class InitGameGUI extends JFrame {
                 
             } else {
                 if (loginComparison(user, pass)) {
-                    // ------------ Login successful ------------
-                    this.dispose(); // Close this window.
-                    /*StartGameGUI startGameGUI = new StartGameGUI();
-                    startGameGUI.setVisible(true);
-                    startGameGUI.setUser(user);*/
+                    this.dispose();
+                    
+                    setOnlineStatus(user);
                     
                     NewGameGUI newGameGUI = new NewGameGUI();
                     newGameGUI.setUser(user);
@@ -169,6 +168,19 @@ public class InitGameGUI extends JFrame {
         this.setVisible(true);
     }
     
+    private void setOnlineStatus(String user) {
+        try {
+            String insertQuery = "UPDATE users SET state = 1 WHERE user = ?";
+            
+            PreparedStatement prepState = connection
+                    .prepareStatement(insertQuery);
+            prepState.setString(1, user);
+            
+            prepState.executeUpdate();
+            
+        } catch(SQLException e) {}
+    }
+    
     private boolean loginComparison(String user, String pass) {
         try {
             
@@ -183,9 +195,7 @@ public class InitGameGUI extends JFrame {
                 ("SELECT * FROM users WHERE user = '" + user + "' "
                         + "AND pass = sha1('" + pass + "')");
             
-            if (resultSet.next()) { 
-                connection.close(); return true; 
-            } else { connection.close(); }
+            if (resultSet.next()) return true;
                     
         } catch(SQLException | ClassNotFoundException e) 
             { System.out.println(e); }
