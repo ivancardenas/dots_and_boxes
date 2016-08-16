@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 
 public class NewGameGUI extends JFrame {
     
@@ -191,7 +192,15 @@ public class NewGameGUI extends JFrame {
                     System.out.println(""+ex);
                 }
                 
-            } else JOptionPane.showMessageDialog(null, "Incorrect user!");
+            } else {
+                
+                JOptionPane.showMessageDialog(null, 
+                        "  The user you entered is"
+                    + "\nincorrect, or is not online.");
+                
+                textAddPlayer.setText(""); 
+                textAddPlayer.requestFocus();
+            }
             
         });
         
@@ -240,7 +249,7 @@ public class NewGameGUI extends JFrame {
             
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery
-                ("SELECT * FROM users WHERE user = '" + player + "'");
+                ("SELECT * FROM users WHERE user = '" + player + "' AND state = 1");
             
             if (resultSet.next()) return true; 
                     
