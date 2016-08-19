@@ -9,7 +9,6 @@ import java.awt.Point;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.Connection;
@@ -29,17 +28,19 @@ public class StartGameGUI extends JFrame {
     
     JPanel gamePanel = new JPanel();
 
-    int width = 400, height = 600;
+    int width = 400, height = 530;
     int pointX = 0, pointY = 0;
     
     int cols = 0;
     
-    String user;
+    String user = "", player = "";
     
     Point actualPoint = null;
     Point finalPoint = null;
     
     JLabel dotsArray[][], namesArray[][];
+    JLabel labelUser, labelPlayer;
+    JLabel labelPUser, labelPPlayer;
     
     Connection connection;
     
@@ -49,7 +50,7 @@ public class StartGameGUI extends JFrame {
         
         drawLinesGUI(rows, cols);
         
-        Timer timer = new Timer(5000, 
+        Timer timer = new Timer(3000, 
                 (ActionEvent e) -> {
             repaint();
         });
@@ -85,6 +86,30 @@ public class StartGameGUI extends JFrame {
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(3);
         this.getContentPane().setBackground(Color.WHITE);
+        
+        labelUser = new JLabel();
+        labelUser.setBounds(0, 405, 200, 20);
+        labelUser.setHorizontalAlignment(JLabel.CENTER);
+        labelUser.setFont(new Font("Monospace", Font.PLAIN, 20));
+        labelUser.setForeground(Color.BLUE);
+        
+        labelPUser = new JLabel("0");
+        labelPUser.setBounds(0, 440, 200, 40);
+        labelPUser.setHorizontalAlignment(JLabel.CENTER);
+        labelPUser.setFont(new Font("Monospace", Font.PLAIN, 50));
+        labelPUser.setForeground(Color.BLUE);
+        
+        labelPlayer = new JLabel();
+        labelPlayer.setBounds(200, 405, 200, 20);
+        labelPlayer.setHorizontalAlignment(JLabel.CENTER);
+        labelPlayer.setFont(new Font("Monospace", Font.PLAIN, 20));
+        labelPlayer.setForeground(Color.RED);
+        
+        labelPPlayer = new JLabel("0");
+        labelPPlayer.setBounds(200, 440, 200, 40);
+        labelPPlayer.setHorizontalAlignment(JLabel.CENTER);
+        labelPPlayer.setFont(new Font("Monospace", Font.PLAIN, 50));
+        labelPPlayer.setForeground(Color.RED);
 
         gamePanel.setBounds(30, 30, this.getWidth() - 60,
                 this.getWidth() - 60);
@@ -145,7 +170,11 @@ public class StartGameGUI extends JFrame {
         }
         
         this.add(gamePanel);
-
+        this.add(labelUser);
+        this.add(labelPlayer);
+        this.add(labelPUser);
+        this.add(labelPPlayer);
+        
         this.setVisible(true);
     }
 
@@ -195,16 +224,16 @@ public class StartGameGUI extends JFrame {
         
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                names[i][j] = new JLabel("S");
-                names[i][j].setSize(15, 15);
+                names[i][j] = new JLabel("●");
+                names[i][j].setSize(30, 30);
                 
                 names[i][j].setFont(new Font("Monospace", 
-                        Font.PLAIN, 15));
+                        Font.PLAIN, 50));
                 
                 int x = (gamePanel.getWidth() - 8) / (cols) * j;
                 int y = (gamePanel.getWidth() - 8) / (rows) * i;
                 
-                names[i][j].setLocation(x + 33, y + 33);
+                names[i][j].setLocation(x + 23, y + 20);
                 
                 gamePanel.add(names[i][j]);
                 
@@ -406,11 +435,8 @@ public class StartGameGUI extends JFrame {
     
     private void setOfflineStatus(String user) {
         
-        System.out.println("update");
         try {
             String insertQuery = "UPDATE users SET state = 0 WHERE user = ?";
-            
-            System.out.println("update: " + user);
             
             PreparedStatement prepState = connection
                     .prepareStatement(insertQuery);
@@ -423,6 +449,14 @@ public class StartGameGUI extends JFrame {
     
     public void setUser(String user) {
         this.user = user;
+        
+        labelUser.setText(user.toUpperCase());
+    }
+    
+    public void setPlayer(String player) {
+        this.player = player;
+        
+        labelPlayer.setText(player.toUpperCase());
     }
     
     public void setGameID(int gameID) {
