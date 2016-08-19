@@ -31,7 +31,7 @@ public class StartGameGUI extends JFrame {
     int width = 400, height = 530;
     int pointX = 0, pointY = 0;
     
-    int cols = 0;
+    int cols = 0, userp, playerp;
     
     String user = "", player = "";
     
@@ -50,8 +50,13 @@ public class StartGameGUI extends JFrame {
         
         drawLinesGUI(rows, cols);
         
-        Timer timer = new Timer(3000, 
+        Timer timer = new Timer(1000, 
                 (ActionEvent e) -> {
+            if (!isPlayerOnline(player)) {
+                JOptionPane.showMessageDialog(null, "The other player is"
+                        + "\noffline, the game will end.");
+                System.exit(0);
+            }
             repaint();
         });
         
@@ -93,7 +98,7 @@ public class StartGameGUI extends JFrame {
         labelUser.setFont(new Font("Monospace", Font.PLAIN, 20));
         labelUser.setForeground(Color.BLUE);
         
-        labelPUser = new JLabel("0");
+        labelPUser = new JLabel(Integer.toString(userp));
         labelPUser.setBounds(0, 440, 200, 40);
         labelPUser.setHorizontalAlignment(JLabel.CENTER);
         labelPUser.setFont(new Font("Monospace", Font.PLAIN, 50));
@@ -105,7 +110,7 @@ public class StartGameGUI extends JFrame {
         labelPlayer.setFont(new Font("Monospace", Font.PLAIN, 20));
         labelPlayer.setForeground(Color.RED);
         
-        labelPPlayer = new JLabel("0");
+        labelPPlayer = new JLabel(Integer.toString(playerp));
         labelPPlayer.setBounds(200, 440, 200, 40);
         labelPPlayer.setHorizontalAlignment(JLabel.CENTER);
         labelPPlayer.setFont(new Font("Monospace", Font.PLAIN, 50));
@@ -422,6 +427,7 @@ public class StartGameGUI extends JFrame {
     private void exitGame(int gameID) {
         
         try {
+            
             String insertQuery = "UPDATE games SET state = 0 WHERE idgame = ?";
             
             PreparedStatement prepState = connection
@@ -436,6 +442,7 @@ public class StartGameGUI extends JFrame {
     private void setOfflineStatus(String user) {
         
         try {
+            
             String insertQuery = "UPDATE users SET state = 0 WHERE user = ?";
             
             PreparedStatement prepState = connection
@@ -445,6 +452,41 @@ public class StartGameGUI extends JFrame {
             prepState.executeUpdate();
             
         } catch(SQLException e) {}
+    }
+    
+    private boolean isPlayerOnline(String player) {
+        
+        try {
+            
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM users WHERE user = '" + player + "' ");
+            
+            while (result.next())
+                if (result.getInt(4) == 1) 
+                    return true;
+            
+        } catch(SQLException e) {}
+        
+        return false;
+    }
+    
+    private String whoStartGame() {
+        
+        try {
+            
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM games WHERE idgame = '" + gameID + "' ");
+            
+            while (result.next()) 
+                return result.getString(2);
+            
+        } catch(SQLException e) {
+            System.out.println(e);
+        }
+        
+        return "";
     }
     
     public void setUser(String user) {
@@ -461,6 +503,12 @@ public class StartGameGUI extends JFrame {
     
     public void setGameID(int gameID) {
         this.gameID = gameID;
+        
+        if (whoStartGame().equals(user)) {
+            System.out.println("I start the game.");
+        } else {
+            System.out.println("I am the opponent.");
+        }
     }
     
     private int getPointX() {
