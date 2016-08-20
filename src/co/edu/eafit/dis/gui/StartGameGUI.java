@@ -55,6 +55,8 @@ public class StartGameGUI extends JFrame {
             if (!isPlayerOnline(player)) {
                 JOptionPane.showMessageDialog(null, "The other player is"
                         + "\noffline, the game will end.");
+                setOfflineStatus(user);
+                exitGame(gameID);
                 System.exit(0);
             }
             repaint();
