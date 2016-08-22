@@ -59,7 +59,7 @@ public class StartGameGUI extends JFrame {
         
         drawLinesGUI(rows, cols);
         
-        timer = new Timer(1000, 
+        timer = new Timer(3000, 
                 (ActionEvent e) -> {
             if (!isPlayerOnline(player)) {
                 JOptionPane.showMessageDialog(null, "The other player is"
@@ -82,7 +82,8 @@ public class StartGameGUI extends JFrame {
             Class.forName("com.mysql.jdbc.Driver");
             
             connection = DriverManager.getConnection
-                ("jdbc:mysql://localhost/dots_and_boxes", "root", "rootroot");
+                        ("jdbc:mysql://10.131.137.164:3306/dots_and_boxes", 
+                                "root", "");
             
         } catch (ClassNotFoundException | SQLException e) {}
     }
@@ -323,7 +324,7 @@ public class StartGameGUI extends JFrame {
     
     private void insertPointsDB(int x0, int y0, int x1, int y1) {
         
-        String insertQuery = "INSERT INTO POINTS (x0, y0, x1, y1, idgame)"
+        String insertQuery = "INSERT INTO points (x0, y0, x1, y1, idgame)"
                 + " VALUES (?, ?, ?, ?, ?)";
         try {
             PreparedStatement prepState = connection
@@ -460,7 +461,7 @@ public class StartGameGUI extends JFrame {
             
             Statement statement = connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM POINTS WHERE idgame =  '" + gameID + "' ");
+                    "SELECT * FROM points WHERE idgame =  '" + gameID + "' ");
             
             while (result.next()) {
                 
@@ -644,7 +645,7 @@ public class StartGameGUI extends JFrame {
             
             Statement statement = connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM POINTS WHERE idgame = '" + gameID + "' ");
+                    "SELECT * FROM points WHERE idgame = '" + gameID + "' ");
             
             while (result.next()) {
                 

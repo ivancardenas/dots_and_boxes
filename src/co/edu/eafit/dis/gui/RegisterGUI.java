@@ -158,8 +158,8 @@ public class RegisterGUI extends JFrame {
             Class.forName("com.mysql.jdbc.Driver");
             
             connection = DriverManager.getConnection
-                        ("jdbc:mysql://localhost/dots_and_boxes", 
-                                "root", "rootroot");
+                        ("jdbc:mysql://10.131.137.164:3306/dots_and_boxes", 
+                                "root", "");
             
             String insertQuery = "INSERT INTO users (name, user, pass) "
                     + "VALUES(?, ?, sha1(?))";
@@ -187,8 +187,8 @@ public class RegisterGUI extends JFrame {
             Class.forName("com.mysql.jdbc.Driver");
              
             connection = DriverManager.getConnection
-                        ("jdbc:mysql://localhost/dots_and_boxes", 
-                                "root", "rootroot");
+                        ("jdbc:mysql://10.131.137.164:3306/dots_and_boxes", 
+                                "root", "");
             
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery
