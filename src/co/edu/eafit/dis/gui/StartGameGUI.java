@@ -51,6 +51,8 @@ public class StartGameGUI extends JFrame {
     
     int userq = 0, playerq = 0;
     
+    int flag = 0, flagn = 0;
+    
     int gameID;
     
     Timer timer;
@@ -177,6 +179,8 @@ public class StartGameGUI extends JFrame {
                                     howManySquares(x0, y0, x1, y1);
                                     iMadeASquare(squareCount);
                                 }
+                                
+                                flag = 0; flagn = 0;
                                 
                                 isItMyTurn();
                                 
@@ -784,7 +788,11 @@ public class StartGameGUI extends JFrame {
         
         iStartTheGame = whoStartGame().equals(user);
         
-        if (!iStartTheGame) this.setEnabled(false);
+        if (!iStartTheGame) {
+            this.setEnabled(false);
+            JOptionPane.showMessageDialog(null, player + "'s turn!");
+        }
+        else JOptionPane.showMessageDialog(null, "It's your turn!");
     }
     
     private void isItMyTurn() {
@@ -804,20 +812,38 @@ public class StartGameGUI extends JFrame {
         
         if (iStartTheGame) {
             // I am the user.
-            if (userTurn == playerTurn) 
+            if (userTurn == playerTurn) {
                 this.setEnabled(true);
-            else this.setEnabled(false);
-            
-            if (userTurn > playerTurn) 
+                if (flag++ == 0)
+                    JOptionPane.showMessageDialog(null, "It's your turn!");
+            } else {
                 this.setEnabled(false);
+                if (flagn++ == 0)
+                    JOptionPane.showMessageDialog(null, player + "'s turn!");
+            }
+            
+            if (userTurn > playerTurn) { 
+                this.setEnabled(false);
+                if (flagn++ == 0)
+                    JOptionPane.showMessageDialog(null, player + "'s turn!");
+            }
         } else {
             // I am the player.
-            if (userTurn == playerTurn) 
+            if (userTurn == playerTurn) {
                 this.setEnabled(false);
-            else this.setEnabled(true);
-            
-            if (userTurn > playerTurn) 
+                if (flagn++ == 0)
+                    JOptionPane.showMessageDialog(null, player + "'s turn!");
+            } else {
                 this.setEnabled(true);
+                if (flag++ == 0)
+                    JOptionPane.showMessageDialog(null, "It's your turn!");
+            }
+            
+            if (userTurn > playerTurn) {
+                this.setEnabled(true);
+                if (flag++ == 0)
+                    JOptionPane.showMessageDialog(null, "It's your turn!");
+            }
         }
     }
     
