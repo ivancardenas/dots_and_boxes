@@ -788,11 +788,11 @@ public class StartGameGUI extends JFrame {
         
         iStartTheGame = whoStartGame().equals(user);
         
-        if (!iStartTheGame) {
-            this.setEnabled(false);
-            JOptionPane.showMessageDialog(null, player + "'s turn!");
-        }
-        else JOptionPane.showMessageDialog(null, "It's your turn!");
+//        if (!iStartTheGame) {
+//            this.setEnabled(false);
+//            JOptionPane.showMessageDialog(null, player + "'s turn!");
+//        }
+//        else JOptionPane.showMessageDialog(null, "It's your turn!");
     }
     
     private void isItMyTurn() {
@@ -811,36 +811,64 @@ public class StartGameGUI extends JFrame {
         } catch(SQLException e) {}
         
         if (iStartTheGame) {
+            
             // I am the user.
             if (userTurn == playerTurn) {
+                
                 this.setEnabled(true);
+                this.getContentPane().setBackground(Color.WHITE);
+                gamePanel.setBackground(Color.WHITE);
+                
                 if (flag++ == 0)
                     JOptionPane.showMessageDialog(null, "It's your turn!");
+                
             } else {
+                
                 this.setEnabled(false);
+                this.getContentPane().setBackground(Color.GRAY);
+                gamePanel.setBackground(Color.GRAY);
+                
                 if (flagn++ == 0)
                     JOptionPane.showMessageDialog(null, player + "'s turn!");
             }
             
             if (userTurn > playerTurn) { 
+                
                 this.setEnabled(false);
+                this.getContentPane().setBackground(Color.GRAY);
+                gamePanel.setBackground(Color.GRAY);
+                
                 if (flagn++ == 0)
                     JOptionPane.showMessageDialog(null, player + "'s turn!");
             }
+            
         } else {
+            
             // I am the player.
             if (userTurn == playerTurn) {
+                
                 this.setEnabled(false);
+                this.getContentPane().setBackground(Color.GRAY);
+                gamePanel.setBackground(Color.GRAY);
+                
                 if (flagn++ == 0)
                     JOptionPane.showMessageDialog(null, player + "'s turn!");
+                
             } else {
+                
                 this.setEnabled(true);
+                this.getContentPane().setBackground(Color.WHITE);
+                gamePanel.setBackground(Color.WHITE);
+                
                 if (flag++ == 0)
                     JOptionPane.showMessageDialog(null, "It's your turn!");
             }
             
             if (userTurn > playerTurn) {
                 this.setEnabled(true);
+                this.getContentPane().setBackground(Color.WHITE);
+                gamePanel.setBackground(Color.WHITE);
+                
                 if (flag++ == 0)
                     JOptionPane.showMessageDialog(null, "It's your turn!");
             }
