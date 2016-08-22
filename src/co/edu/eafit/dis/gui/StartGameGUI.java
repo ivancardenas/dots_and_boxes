@@ -44,13 +44,22 @@ public class StartGameGUI extends JFrame {
     
     Connection connection;
     
+    boolean iStartTheGame;
+    
+    int movements = 0;
+    int squareCount = 0;
+    
+    int userq = 0, playerq = 0;
+    
     int gameID;
+    
+    Timer timer;
     
     public StartGameGUI(int rows, int cols) {
         
         drawLinesGUI(rows, cols);
         
-        Timer timer = new Timer(1000, 
+        timer = new Timer(1000, 
                 (ActionEvent e) -> {
             if (!isPlayerOnline(player)) {
                 JOptionPane.showMessageDialog(null, "The other player is"
@@ -59,7 +68,10 @@ public class StartGameGUI extends JFrame {
                 exitGame(gameID);
                 System.exit(0);
             }
+            
             repaint();
+            
+            gameOver();
         });
         
         timer.start();
@@ -151,12 +163,24 @@ public class StartGameGUI extends JFrame {
                             
                             if (isLineCorrect) {
                                 
-                                insertPointsDB((int)actualPoint.getX(),
-                                        (int)actualPoint.getY(),
-                                        (int)finalPoint.getX(),
-                                        (int)finalPoint.getY());
+                                int x0 = (int)actualPoint.getX();
+                                int y0 = (int)actualPoint.getY();
+                                int x1 = (int)finalPoint.getX();
+                                int y1 = (int)finalPoint.getY();
+                                
+                                insertPointsDB(x0, y0, x1, y1);
+                                
+                                movementDB(paintSquareLocal(x0, y0, x1, y1));
+                                
+                                if (paintSquareLocal(x0, y0, x1, y1)) {
+                                    howManySquares(x0, y0, x1, y1);
+                                    iMadeASquare(squareCount);
+                                }
+                                
+                                isItMyTurn();
                                 
                                 repaint();
+                                
                             } else {
                                 JOptionPane.showMessageDialog(
                                         null, "Invalid movement!");
@@ -184,7 +208,96 @@ public class StartGameGUI extends JFrame {
         
         this.setVisible(true);
     }
+    
+    private void movementDB(boolean isSquare) {
+        
+        if (!isSquare) 
+            movements++;
+        
+        if (iStartTheGame) {
+            
+            try {
+                String insertQuery = "UPDATE games SET userp = ? WHERE idgame = ?";
 
+                PreparedStatement prepState = connection
+                        .prepareStatement(insertQuery);
+                prepState.setInt(1, movements);
+                prepState.setInt(2, gameID);
+
+                prepState.executeUpdate();
+            } catch(SQLException e) {} 
+            
+        } else {
+            
+            try {
+                String insertQuery = "UPDATE games SET playerp = ? WHERE idgame = ?";
+
+                PreparedStatement prepState = connection
+                        .prepareStatement(insertQuery);
+                prepState.setInt(1, movements);
+                prepState.setInt(2, gameID);
+
+                prepState.executeUpdate();
+            } catch(SQLException e) {}
+            
+        }
+    }
+
+    private void iMadeASquare(int squareCount) {
+        
+        try {
+            
+            if (iStartTheGame) {
+                
+                String insertQuery = "UPDATE games SET userq = ? WHERE idgame = ?";
+            
+                PreparedStatement prepState = connection
+                        .prepareStatement(insertQuery);
+                prepState.setInt(1, squareCount);
+                prepState.setInt(2, gameID);
+            
+                prepState.executeUpdate();
+                
+            } else {
+                
+                String insertQuery = "UPDATE games SET playerq = ? WHERE idgame = ?";
+            
+                PreparedStatement prepState = connection
+                        .prepareStatement(insertQuery);
+                prepState.setInt(1, squareCount);
+                prepState.setInt(2, gameID);
+            
+                prepState.executeUpdate();
+            }
+            
+        } catch(SQLException e) {}
+    }
+    
+    private void putScoreResult() {
+        
+        try {
+            
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery (
+                    "SELECT * FROM games WHERE idgame = '" + gameID + "' ");
+            
+            while (result.next()) {
+                
+                userq = result.getInt("userq");
+                playerq = result.getInt("playerq");
+                
+                if (iStartTheGame) {
+                    labelPUser.setText(Integer.toString(userq));
+                    labelPPlayer.setText(Integer.toString(playerq));
+                } else {
+                    labelPUser.setText(Integer.toString(playerq));
+                    labelPPlayer.setText(Integer.toString(userq));
+                }
+            }
+            
+        } catch(SQLException e) {}
+    }
+    
     private JLabel[][] paintDots(int rows, int cols) {
 
         JLabel dots[][] = new JLabel[rows + 1][cols + 1];
@@ -264,7 +377,7 @@ public class StartGameGUI extends JFrame {
 
             Statement statement = connection.createStatement();
             ResultSet result = statement.executeQuery (
-                    "SELECT * FROM POINTS WHERE idgame = '" + gameID + "' ");
+                    "SELECT * FROM points WHERE idgame = '" + gameID + "' ");
 
             while (result.next()) {
 
@@ -277,10 +390,66 @@ public class StartGameGUI extends JFrame {
                         x1 * dis + 33, y1 * dis + 57);
             }
 
-
         } catch(SQLException e) {}
-
+        
+        putScoreResult();
+        
+        isItMyTurn();
+        
         paintSquare();
+    }
+    
+    private void gameOver() {
+        
+        putScoreResult();
+        
+        if ((userq + playerq) == 25) {
+            
+            timer.stop();
+            
+            if (userq > playerq && iStartTheGame) {
+                JOptionPane.showMessageDialog(null, 
+                        "YOU WON!!!\nGamer over.");
+                exitGame(gameID); setWinner(user);
+                
+            } else if (userq < playerq && iStartTheGame) {
+                JOptionPane.showMessageDialog(null, 
+                        "YOU LOSE!!!\nGamer over.");
+                exitGame(gameID); setWinner(user);
+                
+            } else if (userq < playerq && !iStartTheGame) {
+                JOptionPane.showMessageDialog(null, 
+                        "YOU WON!!!\nGamer over.");
+                exitGame(gameID); setWinner(player);
+                
+            } else if (userq > playerq && !iStartTheGame) {
+                JOptionPane.showMessageDialog(null, 
+                        "YOU LOSE!!!\nGamer over.");
+                exitGame(gameID); setWinner(player);
+            }
+            
+            this.dispose();
+            
+            NewGameGUI newGameGUI = new NewGameGUI();
+            newGameGUI.setVisible(true);
+            newGameGUI.setUser(user);
+        }
+    }
+    
+    private void setWinner(String winner) {
+        
+        try {
+            
+            String insertQuery = "UPDATE games SET winner = ? WHERE idgame = ?";
+            
+            PreparedStatement prepState = connection
+                    .prepareStatement(insertQuery);
+            prepState.setString(1, winner);
+            prepState.setInt(2, gameID);
+            
+            prepState.executeUpdate();
+            
+        } catch(SQLException e) {}
     }
     
     private void paintSquare() {
@@ -359,6 +528,112 @@ public class StartGameGUI extends JFrame {
             }
             
         } catch(SQLException e) {}
+    }
+    
+    private void howManySquares(int x0, int y0, int x1, int y1) {
+        
+        if (thereIsALine(x0, y0, x0, y0 + 1) || 
+            thereIsALine(x0, y0 + 1, x0, y0)) {
+            if (thereIsALine(x0, y0 + 1, x1, y1 + 1) || 
+                    thereIsALine(x1, y1 + 1, x0, y0 + 1)) {
+                if (thereIsALine(x1, y1 + 1, x1, y1) || 
+                        thereIsALine(x1, y1, x1, y1 + 1)) {
+
+                    if (x1 > x0) squareCount++;
+                    else if (x0 > x1) squareCount++;
+                }
+            }
+        }
+        if (thereIsALine(x0, y0, x0, y0 - 1) || 
+                thereIsALine(x0, y0 - 1, x0, y0)) {
+            if (thereIsALine(x0, y0 - 1, x1, y1 - 1) || 
+                    thereIsALine(x1, y1 - 1, x0, y0 - 1)) {
+                if (thereIsALine(x1, y1 - 1, x1, y1) || 
+                        thereIsALine(x1, y1, x1, y1 - 1)) {
+
+                    if (x1 > x0) squareCount++;
+                    else if (x0 > x1) squareCount++;
+                }
+            }
+        }
+        if (thereIsALine(x0, y0, x0 + 1, y0) || 
+                thereIsALine(x0 + 1, y0, x0, y0)) {
+            if (thereIsALine(x0 + 1, y0, x1 + 1, y1) || 
+                    thereIsALine(x1 + 1, y1, x0 + 1, y0)) {
+                if (thereIsALine(x1 + 1, y1, x1, y1) || 
+                        thereIsALine(x1, y1, x1 + 1, y1)) {
+
+                    if (y1 > y0) squareCount++;
+                    else if (y0 > y1) squareCount++;
+                }
+            }
+        }
+        if (thereIsALine(x0, y0, x0 - 1, y0) || 
+                thereIsALine(x0 - 1, y0, x0, y0)) {
+            if (thereIsALine(x0 - 1, y0, x1 - 1, y1) || 
+                    thereIsALine(x1 - 1, y1, x0 - 1, y0)) {
+                if (thereIsALine(x1 - 1, y1, x1, y1) || 
+                        thereIsALine(x1, y1, x1 - 1, y1)) {
+
+                    if (y1 > y0) squareCount++;
+                    else if (y0 > y1) squareCount++;
+                }
+            }
+        }
+    }
+    
+    private boolean paintSquareLocal(int x0, int y0, int x1, int y1) {
+
+        if (thereIsALine(x0, y0, x0, y0 + 1) || 
+            thereIsALine(x0, y0 + 1, x0, y0)) {
+            if (thereIsALine(x0, y0 + 1, x1, y1 + 1) || 
+                    thereIsALine(x1, y1 + 1, x0, y0 + 1)) {
+                if (thereIsALine(x1, y1 + 1, x1, y1) || 
+                        thereIsALine(x1, y1, x1, y1 + 1)) {
+
+                    if (x1 > x0) return true;
+                    else if (x0 > x1) return true;
+                }
+            }
+        }
+        if (thereIsALine(x0, y0, x0, y0 - 1) || 
+                thereIsALine(x0, y0 - 1, x0, y0)) {
+            if (thereIsALine(x0, y0 - 1, x1, y1 - 1) || 
+                    thereIsALine(x1, y1 - 1, x0, y0 - 1)) {
+                if (thereIsALine(x1, y1 - 1, x1, y1) || 
+                        thereIsALine(x1, y1, x1, y1 - 1)) {
+
+                    if (x1 > x0) return true;
+                    else if (x0 > x1) return true;
+                }
+            }
+        }
+        if (thereIsALine(x0, y0, x0 + 1, y0) || 
+                thereIsALine(x0 + 1, y0, x0, y0)) {
+            if (thereIsALine(x0 + 1, y0, x1 + 1, y1) || 
+                    thereIsALine(x1 + 1, y1, x0 + 1, y0)) {
+                if (thereIsALine(x1 + 1, y1, x1, y1) || 
+                        thereIsALine(x1, y1, x1 + 1, y1)) {
+
+                    if (y1 > y0) return true;
+                    else if (y0 > y1) return true;
+                }
+            }
+        }
+        if (thereIsALine(x0, y0, x0 - 1, y0) || 
+                thereIsALine(x0 - 1, y0, x0, y0)) {
+            if (thereIsALine(x0 - 1, y0, x1 - 1, y1) || 
+                    thereIsALine(x1 - 1, y1, x0 - 1, y0)) {
+                if (thereIsALine(x1 - 1, y1, x1, y1) || 
+                        thereIsALine(x1, y1, x1 - 1, y1)) {
+
+                    if (y1 > y0) return true;
+                    else if (y0 > y1) return true;
+                }
+            }
+        }
+        
+        return false;
     }
     
     private boolean thereIsALine(int x0, int y0, int x1, int y1) {
@@ -506,10 +781,42 @@ public class StartGameGUI extends JFrame {
     public void setGameID(int gameID) {
         this.gameID = gameID;
         
-        if (whoStartGame().equals(user)) {
-            System.out.println("I start the game.");
+        iStartTheGame = whoStartGame().equals(user);
+        
+        if (!iStartTheGame) this.setEnabled(false);
+    }
+    
+    private void isItMyTurn() {
+        
+        int userTurn = 0, playerTurn = 0;
+        
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery (
+                    "SELECT * FROM games WHERE idgame = '" + gameID + "' ");
+
+            while (result.next()) {
+                userTurn = result.getInt("userp");
+                playerTurn = result.getInt("playerp");
+            }
+        } catch(SQLException e) {}
+        
+        if (iStartTheGame) {
+            // I am the user.
+            if (userTurn == playerTurn) 
+                this.setEnabled(true);
+            else this.setEnabled(false);
+            
+            if (userTurn > playerTurn) 
+                this.setEnabled(false);
         } else {
-            System.out.println("I am the opponent.");
+            // I am the player.
+            if (userTurn == playerTurn) 
+                this.setEnabled(false);
+            else this.setEnabled(true);
+            
+            if (userTurn > playerTurn) 
+                this.setEnabled(true);
         }
     }
     
