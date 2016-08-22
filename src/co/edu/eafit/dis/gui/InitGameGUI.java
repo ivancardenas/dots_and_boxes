@@ -61,8 +61,8 @@ public class InitGameGUI extends JFrame {
         this.setDefaultCloseOperation(3);
         this.getContentPane().setBackground(Color.WHITE);
         
-        imageGameIcon = new ImageIcon("src/co/edu/eafit/dis/res" + 
-                "/dots_and_boxes.png");
+        imageGameIcon = new ImageIcon(getClass().getResource
+            ("/co/edu/eafit/dis/res/dots_and_boxes.png"));
         labelGameIcon = new JLabel(imageGameIcon);
         labelGameIcon.setBounds(30, 30, imageGameIcon.getIconWidth(),
                 imageGameIcon.getIconHeight());
